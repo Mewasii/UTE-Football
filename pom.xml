@@ -98,13 +98,6 @@
 			<artifactId>spring-boot-starter-security</artifactId>
 		</dependency>
 
-
-	
-		<dependency>
-			<groupId>vn.iostar</groupId>
-			<artifactId>SanBong</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
 	</dependencies>
 
 	<build>
