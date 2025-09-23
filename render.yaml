@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: spring-boot-backend
+    env: docker
+    plan: free
+    dockerfilePath: ./Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: JAVA_OPTS
+        value: "-Xmx512m"
+    healthCheckPath: /actuator/health

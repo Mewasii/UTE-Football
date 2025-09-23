@@ -1,6 +1,5 @@
 package com.example.doancuoiki.controller;
 
-
 import org.springframework.ui.Model;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -11,36 +10,57 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import com.example.doancuoiki.service.IUserServices;
 
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+
 @Controller
 public class RegisterController {
 
-	@Autowired
+    @Autowired
     private IUserServices userService;
-	
-	@GetMapping("/register")
+
+    @GetMapping("/register")
     public String showRegisterForm() {
-        return "register"; // Trả về trang đăng ký
+        return "register";
     }
-	
-	@PostMapping("/register")
-    public String registerUser(@RequestParam String username, 
-                               @RequestParam String password, 
-                               @RequestParam String email, 
-                               @RequestParam String fullname, 
-                               @RequestParam String phone, 
+
+    @PostMapping("/register")
+    public String registerUser(@RequestParam String username,
+                               @RequestParam String password,
+                               @RequestParam String email,
+                               @RequestParam String fullname,
+                               @RequestParam String phone,
                                Model model,
                                RedirectAttributes redirectAttributes) {
-        boolean isSuccess = userService.register(username, password, email, fullname, phone);
+
+        // Hash password using SHA-256
+        String hashedPassword = hashSHA256(password);
+
+        boolean isSuccess = userService.register(username, hashedPassword, email, fullname, phone);
         if (isSuccess) {
-        	redirectAttributes.addFlashAttribute("alert", "Đăng ký thành công!");
-            return "login"; // Chuyển hướng sang trang đăng nhập
+            redirectAttributes.addFlashAttribute("alert", "Đăng ký thành công!");
+            return "login";
         } else {
-        	 model.addAttribute("popup", "Đăng ký thất bại! Tên đăng nhập, email hoặc số điện thoại đã tồn tại.");
-            return "register"; // Quay lại trang đăng ký
+            model.addAttribute("popup", "Đăng ký thất bại! Tên đăng nhập, email hoặc số điện thoại đã tồn tại.");
+            return "register";
         }
-        
-        
-        
-	}
-	
+    }
+
+    // SHA-256 hash function
+    private String hashSHA256(String input) {
+        try {
+            MessageDigest digest = MessageDigest.getInstance("SHA-256");
+            byte[] hash = digest.digest(input.getBytes(StandardCharsets.UTF_8));
+            StringBuilder hexString = new StringBuilder();
+            for (byte b : hash) {
+                String hex = Integer.toHexString(0xff & b);
+                if (hex.length() == 1) hexString.append('0');
+                hexString.append(hex);
+            }
+            return hexString.toString();
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not found", e);
+        }
+    }
 }

@@ -32,7 +32,11 @@ public class AdminController {
 	//guitamihsidjhaidh
 	@Autowired
 	private IUserServices userService;
-
+ 
+	
+	
+	
+	
 	private void addUserToModel(HttpSession session, Model model) {
 		String fullname = (String) session.getAttribute(Constant.SESSION_FULLNAME);
 		String account = (String) session.getAttribute(Constant.SESSION_ACCOUNT);
@@ -41,29 +45,38 @@ public class AdminController {
 			model.addAttribute("fullname", fullname);
 		}
 	}
-
+	
+     
+	
+	
+	
+	
 	@GetMapping("/admin")
 	public String adminhome(HttpSession session, Model model) {
-		addUserToModel(session, model); // Gọi phương thức để thêm thông tin người dùng vào model
-		
-		List<UserModel> users =  userRepository.findAll();
-		long totalUsers = users.size();
-		model.addAttribute("totalUsers", totalUsers);
-		   
-		
-		 List<Booking> unconfirmedBookings = bookingRepository.findByConfirmNull();
-		    // Đếm số lượng đơn chưa xác nhận
-		    long unconfirmedCount = unconfirmedBookings.size();
-		    // Thêm số lượng đơn chưa xác nhận vào model để hiển thị trên trang admin
-		    model.addAttribute("unconfirmedCount", unconfirmedCount);
-		
-		
-		
-		
-		
-		return "adminhome"; // Trả về trang home.html
-		
+	    Object status = session.getAttribute(Constant.SESSION_STATUS);
+
+	    // Nếu chưa đăng nhập hoặc không phải admin/manager (status ≠ 1 hoặc 2) thì về home
+	    if (status == null || (!(status.equals(1) || status.equals(2)))) {
+	        return "redirect:/home"; 
+	    }
+
+	    addUserToModel(session, model); // Đã đăng nhập hợp lệ
+
+	    List<UserModel> users = userRepository.findAll();
+	    model.addAttribute("totalUsers", users.size());
+
+	    List<Booking> unconfirmedBookings = bookingRepository.findByConfirmNull();
+	    model.addAttribute("unconfirmedCount", unconfirmedBookings.size());
+
+	    return "adminhome";
 	}
+
+	
+	
+	
+	
+	
+	
 
 	@GetMapping("/admin/user")
 	public String adminuser(HttpSession session, Model model) {
@@ -86,23 +99,51 @@ public class AdminController {
 		return "AddUser";
 	}    
 	@PostMapping("/admin/adduser")
-    public String addUser(@RequestParam String username, 
-                               @RequestParam String password, 
-                               @RequestParam String email, 
-                               @RequestParam String fullname, 
-                               @RequestParam String phone, 
-                               @RequestParam int status,
-                               Model model) {
-        boolean isSuccess = userService.addUser(username, password, email, fullname, phone,status);
-        
-        if (isSuccess) {
-            model.addAttribute("message", "Đăng ký thành công!");
-            return "redirect:/admin/user"; // Chuyển hướng sang trang đăng nhập
-        } else {
-            model.addAttribute("message", "Đăng ký thất bại! Tên đăng nhập, email hoặc số điện thoại đã tồn tại.");
-            return "AddUser";
-        }// Quay lại trang đăng ký
-        }
+	public String addUser(
+	        @RequestParam String username,
+	        @RequestParam String password,
+	        @RequestParam String email,
+	        @RequestParam String fullname,
+	        @RequestParam String phone,
+	        @RequestParam int status,
+	        Model model) {
+
+	    // Kiểm tra biên dữ liệu
+	    if (username.length() < 4 || username.length() > 20 || !username.matches("^[a-zA-Z0-9_]+$")) {
+	        model.addAttribute("message", "Tên đăng nhập phải từ 4-20 ký tự, chỉ chứa chữ, số hoặc dấu gạch dưới.");
+	        return "AddUser";
+	    }
+	    if (password.length() < 6 || password.length() > 50) {
+	        model.addAttribute("message", "Mật khẩu phải từ 6-50 ký tự.");
+	        return "AddUser";
+	    }
+	    if (!email.matches("^[\\w.-]+@[\\w.-]+\\.\\w{2,}$")) {
+	        model.addAttribute("message", "Email không hợp lệ.");
+	        return "AddUser";
+	    }
+	    if (fullname.length() < 2 || fullname.length() > 50) {
+	        model.addAttribute("message", "Họ tên phải từ 2-50 ký tự.");
+	        return "AddUser";
+	    }
+	    if (!phone.matches("^\\d{10,11}$")) {
+	        model.addAttribute("message", "Số điện thoại phải có 10-11 chữ số.");
+	        return "AddUser";
+	    }
+	    if (status < 0 || status > 2) {
+	        model.addAttribute("message", "Trạng thái không hợp lệ.");
+	        return "AddUser";
+	    }
+
+	    boolean isSuccess = userService.addUser(username, password, email, fullname, phone, status);
+	    if (isSuccess) {
+	        model.addAttribute("message", "Đăng ký thành công!");
+	        return "redirect:/admin/user";
+	    } else {
+	        model.addAttribute("message", "Đăng ký thất bại! Tên đăng nhập, email hoặc số điện thoại đã tồn tại.");
+	        return "AddUser";
+	    }
+	}
+
         
 	@GetMapping("/admin/user/delete/{id}")
 	public String userdelete(@PathVariable int id, HttpSession session, Model model) {
@@ -124,24 +165,39 @@ public class AdminController {
 	}
 
 	@PostMapping("/admin/user/edit/{id}")
-	public String useredit(@RequestParam("id") int id, @RequestParam("fullname") String name,
-			@RequestParam("email") String email, @RequestParam("phone") String phone,@RequestParam("status") int status, HttpSession session,
-			Model model) {
-		addUserToModel(session, model);
-		userService.updateuser(name, phone, email, id,status);
-		return "redirect:/admin/user";
-	}
-	
-	@PostMapping("/admin/delete-booking")
-	@ResponseBody
-	public ResponseEntity<?> deleteBooking(@RequestParam Long bookingId) {
-	    if (bookingRepository.existsById(bookingId)) {
-	        bookingRepository.deleteById(bookingId);
-	        return ResponseEntity.ok().build();
-	    } else {
-	        return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Booking not found");
+	public String useredit(
+	        @RequestParam("id") int id,
+	        @RequestParam("fullname") String name,
+	        @RequestParam("email") String email,
+	        @RequestParam("phone") String phone,
+	        @RequestParam("status") int status,
+	        HttpSession session,
+	        Model model) {
+
+	    addUserToModel(session, model);
+
+	    // Kiểm tra biên
+	    if (name.length() < 2 || name.length() > 50) {
+	        model.addAttribute("message", "Họ tên phải từ 2-50 ký tự.");
+	        return "ManaUserEdit";
 	    }
+	    if (!email.matches("^[\\w.-]+@[\\w.-]+\\.\\w{2,}$")) {
+	        model.addAttribute("message", "Email không hợp lệ.");
+	        return "ManaUserEdit";
+	    }
+	    if (!phone.matches("^\\d{10,11}$")) {
+	        model.addAttribute("message", "Số điện thoại phải có 10-11 chữ số.");
+	        return "ManaUserEdit";
+	    }
+	    if (status < 0 || status > 2) {
+	        model.addAttribute("message", "Trạng thái không hợp lệ.");
+	        return "ManaUserEdit";
+	    }
+
+	    userService.updateuser(name, phone, email, id, status);
+	    return "redirect:/admin/user";
 	}
+
 	@PostMapping("/admin/confirm-booking")
 	@ResponseBody
 	public ResponseEntity<?> confirmBooking(@RequestParam Long bookingId) {

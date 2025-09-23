@@ -398,8 +398,9 @@
                            <textarea class="textarea" placeholder="Lời nhắn" type="type" Message="Name"></textarea>
                         </div>
                         <div class="col-md-12">
-                           <button class="send_btn">Gửi</button>
+                           <button class="send_btn" type="button" id="sendBtn">Gửi</button>
                         </div>
+                        <div id="result" style="margin-top: 20px; color: red;"></div>
                      </div>
                   </form>
                </div>
@@ -413,6 +414,34 @@
          </div>
       </div>
       <!-- end contact -->
+      
+<script>
+document.getElementById("sendBtn").addEventListener("click", function () {
+	   const name = document.querySelector('input[name="Name"]').value;
+	   const email = document.querySelector('input[name="Email"]').value;
+	   const phone = document.querySelector('input[name="Phone Number"]').value;
+	   const message = document.querySelector('textarea').value;
+
+	   const resultDiv = document.getElementById("result");
+	   resultDiv.innerHTML = ''; // Clear nội dung cũ
+
+	   const createSafeP = (label, value) => {
+	      const p = document.createElement('p');
+	      const strong = document.createElement('strong');
+	      strong.textContent = label;
+	      p.appendChild(strong);
+	      p.appendChild(document.createTextNode(' ' + value));
+	      return p;
+	   };
+
+	   resultDiv.appendChild(document.createElement('h4')).textContent = "Thông tin bạn đã gửi:";
+	   resultDiv.appendChild(createSafeP("Tên:", name));
+	   resultDiv.appendChild(createSafeP("Email:", email));
+	   resultDiv.appendChild(createSafeP("Điện thoại:", phone));
+	   resultDiv.appendChild(createSafeP("Lời nhắn:", message));
+	});
+
+</script>
       <!--  footer -->
      <footer>
          <div class="footer">

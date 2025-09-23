@@ -3,6 +3,7 @@ package com.example.doancuoiki.controller;
 import java.util.Random;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -20,7 +21,8 @@ import jakarta.servlet.http.Cookie;
 
 @Controller
 public class LoginController {
-
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 	@Autowired
     private IUserServices userService;
 
@@ -29,10 +31,12 @@ public class LoginController {
         return "login"; // Chuyển hướng tới trang login.html
     }
     
+    
+    
     @PostMapping("/login")
     public String login(
             @RequestParam("username") String username,
-            @RequestParam("password") String password,
+            @RequestParam("password") String passwordHashFromClient,
             @RequestParam(value = "remember", required = false) String remember,
             HttpServletResponse response,
             HttpSession session,
@@ -41,55 +45,32 @@ public class LoginController {
         boolean isRememberMe = "on".equals(remember);
         String alertMsg = "";
 
-        // Kiểm tra trường hợp tài khoản hoặc mật khẩu rỗng
-        if (username.isEmpty() || password.isEmpty()) {
-            alertMsg = "Tài khoản hoặc mật khẩu không được rỗng";
-            model.addAttribute("alert", alertMsg);
+        if (username.isEmpty() || passwordHashFromClient.isEmpty()) {
+            model.addAttribute("alert", "Tài khoản hoặc mật khẩu không được rỗng");
             return "login";
         }
-    
-        
-        // Xử lý đăng nhập
-        UserModel user = userService.login(username, password);
-        if (user != null) {
-        	session.setAttribute(Constant.SESSION_USERNAME, username);
-			session.setAttribute(Constant.SESSION_ACCOUNT, "account");
-            
-			
-            // Lấy thông tin fullname từ cơ sở dữ liệu
-            UserModel userFromDb = userService.FindByUserName(username); // Truy vấn từ UserRepository
-            
-            
-            String fullname = userFromDb.getFullname(); // Lấy cột fullname
-            String email = userFromDb.getEmail();       // Lấy cột email
-            String phone = userFromDb.getPhone();       // Lấy cột phone
-           
-            
-            Long user_id =userFromDb.getId();
-            String userIdStr = user_id.toString();
-            
-            session.setAttribute(Constant.SESSION_FULLNAME, fullname);
-            session.setAttribute(Constant.SESSION_EMAIL, email);
-            session.setAttribute(Constant.SESSION_PHONE, phone);
-            session.setAttribute(Constant.SESSION_USERID,userIdStr);
 
-            
-            // Lưu vào session thông tin tài khoản
-            session.setAttribute("user", user); // Lưu toàn bộ thông tin user vào session
-//            session.setAttribute("fullname", user.getFullname()); // Lưu fullname vào session
-//            session.setAttribute(Constant.SESSION_ACCOUNT, user); // Lưu toàn bộ UserModel vào session
+        UserModel userFromDb = userService.FindByUserName(username);
+
+        if (userFromDb != null && userFromDb.getPassword().equals(passwordHashFromClient)) {
+            // Đúng mật khẩu SHA-256 (từ phía client)
+            session.setAttribute(Constant.SESSION_USERNAME, username);
+            session.setAttribute(Constant.SESSION_ACCOUNT, "account");
+            session.setAttribute(Constant.SESSION_FULLNAME, userFromDb.getFullname());
+            session.setAttribute(Constant.SESSION_EMAIL, userFromDb.getEmail());
+            session.setAttribute(Constant.SESSION_PHONE, userFromDb.getPhone());
+            session.setAttribute(Constant.SESSION_USERID, String.valueOf(userFromDb.getId()));
+            session.setAttribute(Constant.SESSION_STATUS, userFromDb.getStatus());
+            session.setAttribute("user", userFromDb);
 
             if (isRememberMe) {
                 saveRememberMe(response, username);
             }
-            if (user.getStatus() == 0)
-            	return "redirect:home"; // Đăng nhập thành công, chuyển hướng về trang chính
-            else 
-            	return "redirect:admin";
+
+            return (userFromDb.getStatus() == 0) ? "redirect:/home" : "redirect:/admin";
         } else {
-            alertMsg = "Tài khoản hoặc mật khẩu không đúng";
-            model.addAttribute("alert", alertMsg);
-            return "/login"; // Quay lại trang đăng nhập kèm theo thông báo
+            model.addAttribute("alert", "Tài khoản hoặc mật khẩu không đúng");
+            return "login";
         }
     }
     
