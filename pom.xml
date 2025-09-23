@@ -99,11 +99,7 @@
 		</dependency>
 
 
-		<dependency>
-			<groupId>meomeo</groupId>
-			<artifactId>jpact4</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-		</dependency>
+	
 		<dependency>
 			<groupId>vn.iostar</groupId>
 			<artifactId>SanBong</artifactId>
