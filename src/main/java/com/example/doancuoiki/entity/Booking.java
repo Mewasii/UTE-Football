@@ -1,14 +1,7 @@
 package com.example.doancuoiki.entity;
 
 import java.io.Serializable;
-
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.NamedQuery;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 
 @Entity
 @Table(name="bookings")
@@ -21,35 +14,33 @@ public class Booking implements Serializable {
     @Column(name="bookingid")
     private Long bookingid;
 
-    @Column(name="sanid", columnDefinition = "nvarchar(200) NULL")
+    @Column(name="sanid", length = 200)
     private String sanid;
 
-    @Column(name="userid", columnDefinition = "nvarchar(200) NULL")
+    @Column(name="userid", length = 200)
     private String userid;
 
-    @Column(name="date", columnDefinition = "nvarchar(200) NULL")
+    @Column(name="date", length = 200)
     private String date;
 
-    @Column(name="time", columnDefinition = "nvarchar(200) NULL")
+    @Column(name="time", length = 200)
     private String time;
 
-    @Column(name="Price", columnDefinition = "nvarchar(200) NULL")
+    @Column(name="price", length = 200)
     private String price;
     
-	@Column(name = "confirm", columnDefinition = "BOOLEAN DEFAULT NULL")
+    @Column(name = "confirm")
     private Boolean confirm;
 
-	
-	
-	public Boolean getConfirm() {
-		return confirm;
-	}
+    // Getter & Setter
+    public Boolean getConfirm() {
+        return confirm;
+    }
 
-	public void setConfirm(Boolean confirm) {
-		this.confirm = confirm;
-	}
+    public void setConfirm(Boolean confirm) {
+        this.confirm = confirm;
+    }
 
-    // Getter và Setter
     public Long getBookingid() {
         return bookingid;
     }
@@ -98,7 +89,6 @@ public class Booking implements Serializable {
         this.price = price;
     }
 
-    // Constructor không tham số
-    public Booking() {
-    }
+    // Constructor mặc định
+    public Booking() {}
 }
