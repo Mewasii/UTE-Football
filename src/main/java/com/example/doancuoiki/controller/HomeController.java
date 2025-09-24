@@ -72,16 +72,27 @@ public class HomeController {
 	    return "booknow"; // Chuyển hướng đến trang test.html
 	}
 
-	@GetMapping("/profile")
-	public String profile(Model model, HttpSession session) {
-	    addUserToModel(session, model); // Gọi phương thức để thêm thông tin người dùng vào model
-	    String username = (String) session.getAttribute("username"); // Lấy tên người dùng từ session
-		UserModel user = userService.FindByUserName(username);
-	    if (user != null) {
-	        model.addAttribute("profileImage",user.getImages()); // Truyền tên ảnh vào model
-	    }
-	    return "profile"; // Trả về trang profile
-	}
+	 @GetMapping("/profile")
+    public String profile(Model model, HttpSession session) {
+        addUserToModel(session, model); // Gọi phương thức để thêm thông tin người dùng vào model
+        
+        String username = (String) session.getAttribute("username"); // Lấy tên người dùng từ session
+        UserModel user = userService.FindByUserName(username);
+        
+        if (user != null) {
+            model.addAttribute("profileImage", user.getImages()); // Truyền tên ảnh vào model
+            
+            // Lấy danh sách booking của user
+            List<Booking> userBookings = userService.getBookingsByUserId(user.getUserId().toString());
+            model.addAttribute("bookings", userBookings);
+            
+            // Hoặc nếu bạn dùng Optional
+            // Optional<Booking> booking = userService.getBookingByUserId(user.getUserId().toString());
+            // booking.ifPresent(b -> model.addAttribute("booking", b));
+        }
+        
+        return "profile"; // Trả về trang profile
+    }
 
 	@PostMapping("/changepassword")
 	public String changepassword(@RequestParam("currentPassword") String currentPassword,
@@ -103,6 +114,7 @@ public class HomeController {
 				return "changepassword";
 				}
 			}
+			   List<Booking> bookingHistory = bookingRepository.findByUseridOrderByDateDesc(userId);
 		
 			userService.changepassword(confirmPassword, user);
 			

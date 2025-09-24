@@ -15,6 +15,11 @@ public interface BookingRepository extends JpaRepository<Booking ,Long> {
 
     // Find booking by booking_id
     Optional<Booking> findBybookingid(Long bookingId); 
+    // Thêm phương thức để lấy danh sách booking theo user_id
+    List<Booking> findByUseridOrderByBookingDateDesc(String userId);
+    
+    // Hoặc nếu bạn muốn lấy tất cả booking của user
+    List<Booking> findAllByUserid(String userId);
 
 	List<Booking> findByDateAndSanid(String bookingDate, String fieldName);
 	
