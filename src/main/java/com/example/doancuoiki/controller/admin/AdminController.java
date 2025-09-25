@@ -164,6 +164,17 @@ public class AdminController {
 		return "ManaUserEdit";
 	}
 
+	@PostMapping("/admin/delete-booking")
+    @ResponseBody
+    public ResponseEntity<?> deleteBooking(@RequestParam Long bookingId) {
+        Optional<Booking> bookingOpt = bookingRepository.findById(bookingId);
+        if (bookingOpt.isPresent()) {
+            bookingRepository.deleteById(bookingId);
+            return ResponseEntity.ok().build();
+        } else {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Booking not found");
+        }
+    }
 	@PostMapping("/admin/user/edit/{id}")
 	public String useredit(
 	        @RequestParam("id") int id,

@@ -2,6 +2,7 @@ package com.example.doancuoiki.entity;
 
 import java.io.Serializable;
 import java.util.Date;
+
 import jakarta.persistence.*;
 
 @Entity
@@ -12,19 +13,19 @@ public class User implements Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name="id")
+    @Column(name="id") // Đảm bảo tên cột trong cơ sở dữ liệu là 'id'
     private int id;
 
-    @Column(name="username", length = 100, nullable = false)
+    @Column(name="username", columnDefinition = "nvarchar(100) NOT NULL")
     private String username;
 
-    @Column(name="password", length = 100, nullable = false)
+    @Column(name="password", columnDefinition = "nvarchar(100) NOT NULL")
     private String password;
 
-    @Column(name="email", length = 200)
+    @Column(name="email", columnDefinition = "nvarchar(200) NULL")
     private String email;
 
-    @Column(name="phone", length = 15)
+    @Column(name="phone", columnDefinition = "nvarchar(15) NULL")
     private String phone;
 
     @Column(name="status")
@@ -37,40 +38,76 @@ public class User implements Serializable {
     @PrePersist
     public void prePersist() {
         if (createdAt == null) {
-            createdAt = new Date(); 
+            createdAt = new Date(); // Gán giá trị thời gian hiện tại khi tạo đối tượng
         }
         if (images == null || images.isEmpty()) {
-            images = "icon_login.jpg";  
+            images = "icon_login.jpg";  // Gán ảnh mặc định nếu không có ảnh
         }
     }
     
-    @Column(name = "images", length = 500)
+    @Column(name = "Images", columnDefinition = "nvarchar(500) NULL")
     private String images;
+
+
+
 
     public User() {}
 
-    // Getter & Setter
-    public int getId() { return id; }
-    public void setId(int id) { this.id = id; }
+    public int getId() {
+        return id;
+    }
 
-    public String getUsername() { return username; }
-    public void setUsername(String username) { this.username = username; }
+    public void setId(int id) {
+        this.id = id;
+    }
 
-    public String getPassword() { return password; }
-    public void setPassword(String password) { this.password = password; }
+    public String getUsername() {
+        return username;
+    }
 
-    public String getEmail() { return email; }
-    public void setEmail(String email) { this.email = email; }
+    public void setUsername(String username) {
+        this.username = username;
+    }
 
-    public String getPhone() { return phone; }
-    public void setPhone(String phone) { this.phone = phone; }
+    public String getPassword() {
+        return password;
+    }
 
-    public int getStatus() { return status; }
-    public void setStatus(int status) { this.status = status; }
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
-    public Date getCreatedAt() { return createdAt; }
-    public void setCreatedAt(Date createdAt) { this.createdAt = createdAt; }
+    public String getEmail() {
+        return email;
+    }
 
-    public String getImages() { return images; }
-    public void setImages(String images) { this.images = images; }
+    public void setEmail(String email) {
+        this.email = email;
+    }
+
+    public String getPhone() {
+        return phone;
+    }
+
+    public void setPhone(String phone) {
+        this.phone = phone;
+    }
+
+    public int getStatus() {
+        return status;
+    }
+
+    public void setStatus(int status) {
+        this.status = status;
+    }
+
+
+
+    public String getImages() {
+		return images;
+	}
+
+	public void setImages(String images) {
+		this.images = images;
+	}
 }

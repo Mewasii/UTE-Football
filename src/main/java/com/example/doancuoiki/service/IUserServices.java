@@ -2,7 +2,9 @@ package com.example.doancuoiki.service;
 
 
 import java.util.List;
+import java.util.Map;
 
+import com.example.doancuoiki.entity.Booking;
 import com.example.doancuoiki.model.UserModel;
 
 public interface IUserServices {
@@ -14,7 +16,7 @@ public interface IUserServices {
 	
 	void insert(UserModel user);
 	
-	boolean register(String username, String password,String email,  String fullname, String phone);
+	Map<String, String> register(String username, String password,String email,  String fullname, String phone);
 	
 	boolean checkExistEmail(String email);
 	
@@ -51,6 +53,8 @@ public interface IUserServices {
 
 
 	boolean addUser(String username, String password, String email, String fullname, String phone, int status);
+
+
 
 
 	

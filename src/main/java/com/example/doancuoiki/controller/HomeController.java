@@ -1,5 +1,7 @@
 package com.example.doancuoiki.controller;
 
+import java.util.List;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -7,7 +9,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.example.doancuoiki.entity.Booking;
 import com.example.doancuoiki.model.UserModel;
+import com.example.doancuoiki.service.IBookingService;
 import com.example.doancuoiki.service.IUserServices;
 import com.example.doancuoiki.utils.Constant;
 
@@ -22,6 +26,8 @@ public class HomeController {
 	
 	@Autowired
     private IUserServices userService;
+	@Autowired
+    private IBookingService bookingService;
 	// Phương thức giúp lấy fullname và account từ session và thêm vào model
 	private void addUserToModel(HttpSession session, Model model) {
 		String fullname = (String) session.getAttribute(Constant.SESSION_FULLNAME);
@@ -73,26 +79,26 @@ public class HomeController {
 	}
 
 	 @GetMapping("/profile")
-    public String profile(Model model, HttpSession session) {
-        addUserToModel(session, model); // Gọi phương thức để thêm thông tin người dùng vào model
-        
-        String username = (String) session.getAttribute("username"); // Lấy tên người dùng từ session
-        UserModel user = userService.FindByUserName(username);
-        
-        if (user != null) {
-            model.addAttribute("profileImage", user.getImages()); // Truyền tên ảnh vào model
-            
-            // Lấy danh sách booking của user
-            List<Booking> userBookings = userService.getBookingsByUserId(user.getUserId().toString());
-            model.addAttribute("bookings", userBookings);
-            
-            // Hoặc nếu bạn dùng Optional
-            // Optional<Booking> booking = userService.getBookingByUserId(user.getUserId().toString());
-            // booking.ifPresent(b -> model.addAttribute("booking", b));
-        }
-        
-        return "profile"; // Trả về trang profile
-    }
+	    public String profile(Model model, HttpSession session) {
+	        addUserToModel(session, model); // Gọi phương thức để thêm thông tin người dùng vào model
+	        
+	        String username = (String) session.getAttribute("username"); // Lấy tên người dùng từ session
+	        UserModel user = userService.FindByUserName(username);
+	        
+	        if (user != null) {
+	            model.addAttribute("profileImage", user.getImages()); // Truyền tên ảnh vào model
+	 
+	            // Lấy danh sách booking của user
+	   List<Booking> userBookings = bookingService.getBookingsByUserId(user.getId().toString());
+	            model.addAttribute("bookings", userBookings);
+	            
+	            // Hoặc nếu bạn dùng Optional
+	            // Optional<Booking> booking = userService.getBookingByUserId(user.getUserId().toString());
+	            // booking.ifPresent(b -> model.addAttribute("booking", b));
+	        }
+	        
+	        return "profile"; // Trả về trang profile
+	    }
 
 	@PostMapping("/changepassword")
 	public String changepassword(@RequestParam("currentPassword") String currentPassword,
@@ -114,7 +120,6 @@ public class HomeController {
 				return "changepassword";
 				}
 			}
-			   List<Booking> bookingHistory = bookingRepository.findByUseridOrderByDateDesc(userId);
 		
 			userService.changepassword(confirmPassword, user);
 			

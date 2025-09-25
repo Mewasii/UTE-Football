@@ -13,6 +13,7 @@ import com.example.doancuoiki.service.IUserServices;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.Map;
 
 @Controller
 public class RegisterController {
@@ -37,12 +38,32 @@ public class RegisterController {
         // Hash password using SHA-256
         String hashedPassword = hashSHA256(password);
 
-        boolean isSuccess = userService.register(username, hashedPassword, email, fullname, phone);
+        // Gọi userService.register, giả sử nó trả về một Map chứa thông tin lỗi
+        Map<String, String> result = userService.register(username, hashedPassword, email, fullname, phone);
+        boolean isSuccess = Boolean.parseBoolean(result.get("success"));
+
         if (isSuccess) {
             redirectAttributes.addFlashAttribute("alert", "Đăng ký thành công!");
-            return "login";
+            return "redirect:/login";
         } else {
-            model.addAttribute("popup", "Đăng ký thất bại! Tên đăng nhập, email hoặc số điện thoại đã tồn tại.");
+            // Xây dựng thông báo lỗi chi tiết
+            StringBuilder errorMessage = new StringBuilder("Đăng ký thất bại! ");
+            if (result.containsKey("username") && result.get("username").equals("exists")) {
+                errorMessage.append("Tên đăng nhập đã tồn tại. ");
+            }
+            if (result.containsKey("email") && result.get("email").equals("exists")) {
+                errorMessage.append("Email đã tồn tại. ");
+            }
+            if (result.containsKey("phone") && result.get("phone").equals("exists")) {
+                errorMessage.append("Số điện thoại đã tồn tại.");
+            }
+
+            // Gửi lại các giá trị đã nhập và thông báo lỗi
+            model.addAttribute("username", username);
+            model.addAttribute("email", email);
+            model.addAttribute("fullname", fullname);
+            model.addAttribute("phone", phone);
+            model.addAttribute("popup", errorMessage.toString());
             return "register";
         }
     }

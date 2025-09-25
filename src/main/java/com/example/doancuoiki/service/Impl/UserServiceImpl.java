@@ -1,7 +1,9 @@
 package com.example.doancuoiki.service.Impl;
 
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -57,23 +59,39 @@ public class UserServiceImpl implements IUserServices {
     }
 
     @Override
-    public boolean register(String username, String password,String email,String fullname, String phone) {
-        if (checkExistEmail(email) || checkExistUsername(username) || checkExistPhone(phone)) {
-            return false;
+    public Map<String, String> register(String username, String password, String email, String fullname, String phone) {
+        Map<String, String> result = new HashMap<>();
+
+        // Initialize success as true
+        result.put("success", "true");
+
+        // Check for existing username, email, or phone
+        if (checkExistUsername(username)) {
+            result.put("success", "false");
+            result.put("username", "exists");
+        }
+        if (checkExistEmail(email)) {
+            result.put("success", "false");
+            result.put("email", "exists");
+        }
+        if (checkExistPhone(phone)) {
+            result.put("success", "false");
+            result.put("phone", "exists");
         }
 
-        UserModel user = new UserModel();
-        user.setUsername(username);
-        user.setPassword(password);  // Nên mã hóa mật khẩu trước khi lưu
-        user.setEmail(email);
-        user.setPhone(phone);
-        user.setFullname(fullname);
+        // If no errors, save the user
+        if (result.get("success").equals("true")) {
+            UserModel user = new UserModel();
+            user.setUsername(username);
+            user.setPassword(password); // Password should already be hashed in controller
+            user.setEmail(email);
+            user.setFullname(fullname);
+            user.setPhone(phone);
+            userRepository.save(user);
+        }
 
-        // Lưu người dùng vào cơ sở dữ liệu
-        userRepository.save(user);
-        return true;
+        return result;
     }
-
     @Override
     public boolean checkExistEmail(String email) {
         return userRepository.existsByEmail(email);

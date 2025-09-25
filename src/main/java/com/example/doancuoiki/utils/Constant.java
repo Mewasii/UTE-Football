@@ -1,5 +1,4 @@
 package com.example.doancuoiki.utils;
-
 public class Constant {
 
 	public static final String SESSION_USERNAME = "username";
